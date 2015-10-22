@@ -1,14 +1,26 @@
-var express = require('express');
-var app = express();
+// var express = require('express');
+// var app = express();
 
+// app.use(express.static(__dirname + '/public'));
+
+// var ipaddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
+// var port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
+
+var express = require('express')  
+, app = express()
+, server = require('http').createServer(app)
+, io = require("socket.io").listen(server)
+//... more config and code
+//app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 3000);  
+//app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
 app.use(express.static(__dirname + '/public'));
-
 var ipaddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 var port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
 
 
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+
+// var http = require('http').Server(app);
+// var io = require('socket.io')(http);
 
 io.on('connection', function (socket) {
   console.log('a user connected');
@@ -37,4 +49,4 @@ io.on('connection', function (socket) {
     socket.broadcast.emit('webrtc', msg2);
   });
 });
-http.listen(port, ipaddress);
+app.listen(port, ipaddress);
