@@ -6,7 +6,7 @@
     function ChatController($scope) {
         $scope.messages = [];
         $scope.socket = io.connect("https://live-chenze.rhcloud.com:8443");
-        // $scope.socket = io.connect("localhost:3000");
+        //$scope.socket = io.connect("localhost:3000");
 
         $scope.socket.on('chatMsg', function (msg) {
             $scope.messages.push(msg);
@@ -138,16 +138,16 @@
                 //connection.iceServers = extraIceServers;
                 // A new ICE candidate was found
                 connection.onicecandidate = function (event) {
-                    // if (event.candidate) {
-                    //     // Let's send it to our peer via SignalR
-                    //     //hub.server.webRtcSignal(JSON.stringify({ "candidate": event.candidate }), GroupId);(
+                    if (event.candidate) {
+                        // Let's send it to our peer via SignalR
+                        //hub.server.webRtcSignal(JSON.stringify({ "candidate": event.candidate }), GroupId);(
                             
-                    //     var msg = {
-                    //         type: 'webrtc',
-                    //         content: JSON.stringify({ "candidate": event.candidate })
-                    //     }
-                    //     $scope.socket.emit('webrtc', msg);
-                    //}
+                        var msg = {
+                            type: 'webrtc',
+                            content: JSON.stringify({ "candidate": event.candidate })
+                        }
+                        $scope.socket.emit('webrtc', msg);
+                    }
                 };
 
                 // New remote media stream was added
