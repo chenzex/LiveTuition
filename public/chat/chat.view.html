@@ -1,0 +1,9 @@
+<button ng-click="connect('request')">
+	Connect</button>
+<ul id="messages"><li ng-repeat="msg in messages track by $index">{{msg}}</ul>
+<form action="">
+	<input id="m" ng-model="chatInput" autocomplete="off" />
+	<button ng-click="sendMsg()">Send</button>
+</form>
+<video autoplay id="media"></video>
+<canvas id="board" width="800" height="600"></canvas>
