@@ -6,7 +6,7 @@
     function ChatController($scope) {
         $scope.messages = [];
         $scope.socket = io.connect("http://live-chenze.rhcloud.com:8443");
-        //$scope.socket = io.connect("http://localhost:8000");
+        // $scope.socket = io.connect("localhost:3000");
 
         $scope.socket.on('chatMsg', function (msg) {
             $scope.messages.push(msg);

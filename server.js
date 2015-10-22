@@ -6,21 +6,25 @@
 // var ipaddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 // var port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
 
-var express = require('express')  
-, app = express()
-, server = require('http').createServer(app)
-, io = require("socket.io").listen(server)
-//... more config and code
-//app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 3000);  
-//app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
-app.use(express.static(__dirname + '/public'));
-var ipaddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
-var port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
-
-
-
 // var http = require('http').Server(app);
 // var io = require('socket.io')(http);
+
+var express = require('express')
+, app = express()
+, server = require('http').createServer(app)
+, io = require("socket.io").listen(server);
+
+app.configure(function() {
+	app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 3000);
+  	app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
+	app.use(express.static(__dirname + '/public'));
+});
+
+
+
+server.listen(app.get('port'), app.get('ipaddr'), function(){
+	console.log('Express server listening on  IP: ' + app.get('ipaddr') + ' and port ' + app.get('port'));
+});
 
 io.on('connection', function (socket) {
   console.log('a user connected');
@@ -49,4 +53,4 @@ io.on('connection', function (socket) {
     socket.broadcast.emit('webrtc', msg2);
   });
 });
-app.listen(port, ipaddress);
+//http.listen(port, ipaddress);
