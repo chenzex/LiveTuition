@@ -287,18 +287,18 @@
 
             $('.dropdown-menu li > a').click(function (e) {
                 $scope.tool = new tools[this.name]();
-                if(this.name=='pencil'){
+                if (this.name == 'pencil') {
                     $('#toolBtn').html("<span class='glyphicon glyphicon-pencil' aria-hidden='true'></span> <span class='caret'></span>");
-                    
-                }else if(this.name=='rect'){
+
+                } else if (this.name == 'rect') {
                     $('#toolBtn').html("<span class='glyphicon glyphicon-unchecked' aria-hidden='true'></span> <span class='caret'></span>");
-                    
-                }else if(this.name=='line'){
+
+                } else if (this.name == 'line') {
                     $('#toolBtn').html("<span class='glyphicon glyphicon-minus' aria-hidden='true'></span> <span class='caret'></span>");
-                    
-                }else if(this.name=='eraser'){
+
+                } else if (this.name == 'eraser') {
                     $('#toolBtn').html("<span class='glyphicon glyphicon-erase' aria-hidden='true'></span> <span class='caret'></span>");
-                    
+
                 }
             });
 
@@ -434,26 +434,8 @@
 
                 return connection;
             }
-
-
-
-            $scope.connect = function (msg) {
-                var msg2;
-                if (msg == 'request') {
-                    msg2 = {
-                        type: 'request'
-                    }
-                    $scope.socket.emit('webrtc', msg2);
-                    console.log("send request");
-                } else if (msg.type == "request") {
-                    msg2 = {
-                        type: 'accept'
-                    }
-                    $scope.socket.emit('webrtc', msg2);
-                    console.log("send accept");
-                } else if (msg.type == "accept") {
-                    console.log("receive accept");
-                    getUserMedia(
+            function getMedia(){
+                getUserMedia(
                         // Media constraints
                         {
                             video: true,
@@ -488,6 +470,28 @@
                             // Super nifty error handling
                             alert(JSON.stringify(error));
                         });
+            }
+
+
+            $scope.connect = function (msg) {
+                var msg2;
+                if (msg == 'request') {
+                    msg2 = {
+                        type: 'request'
+                    }
+                    $scope.socket.emit('webrtc', msg2);
+                    console.log("send request");
+                } else if (msg.type == "request") {
+                    getMedia();
+                    msg2 = {
+                        type: 'accept'
+                    }
+                    $scope.socket.emit('webrtc', msg2);
+                    console.log("send accept");
+                } else if (msg.type == "accept") {
+                    console.log("receive accept");
+                    getMedia();
+                    
                 } else if (msg.type == "webrtc") {
                     var message = JSON.parse(msg.content),
                         connection = _myConnection || _createConnection(null);

@@ -18,7 +18,8 @@ canvas{
 }
 
 video{
-	height:0px;
+	width: 280px;
+	height:200px;
 }
 
 #board{
