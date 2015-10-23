@@ -1,0 +1,32 @@
+.noPadding{
+	padding:0px !important;
+}
+#colorpicker{
+	display: none;
+}
+
+#canvasContainer{
+	height : 402px;
+	
+}
+
+canvas{
+	border:1px solid #000000;
+	border-width: 2px;
+	position: absolute; 
+	/*top: 200px; */
+}
+
+video{
+	height:0px;
+}
+
+#board{
+	z-index: 1;
+}
+#board2{
+	z-index: 0;
+}
+#board3{
+	z-index: -1;
+}

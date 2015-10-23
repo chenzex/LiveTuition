@@ -1,9 +1,68 @@
-<button ng-click="connect('request')">
-	Connect</button>
-<ul id="messages"><li ng-repeat="msg in messages track by $index">{{msg}}</ul>
-<form action="">
-	<input id="m" ng-model="chatInput" autocomplete="off" />
-	<button ng-click="sendMsg()">Send</button>
-</form>
+<div class="container-fluid noPadding" id="mainContainer">
+  <div class="row">
+    <div class="col-lg-9 noPadding">
+      <div id="canvasContainer">
+        <canvas id="board" width="960" height="400"></canvas>
+        <canvas id="board2" width="960" height="400"></canvas>
+        <canvas id="board3" width="960" height="400"></canvas>
+      </div>
+      <div class="row">
+    <div class="col-lg-3">
+    <div class="btn-group">
+  <button id="toolBtn" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <li><a name="pencil" href=""><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></li>
+    <li><a name="rect" href=""><span class="glyphicon glyphicon-unchecked" aria-hidden="true"></span></a></li>
+    <li><a name="line" href=""><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></a></li>
+    <li role="separator" class="divider"></li>
+    <li><a name="eraser" href=""><span class="glyphicon glyphicon-erase" aria-hidden="true"></span></a></li>
+  </ul>
+</div>
+    </div>
+    <div class="col-lg-3">
+    <div class="input-group colorpicker-component demo demo-auto colorpicker-element">
+  <input hidden="true" type="text" ng-model="color" id="colorpicker" value="#000000" class="form-control">
+  <span class="input-group-addon"><i style="background-color: #000000;"></i></span>
+  <!--<button><i style="background-color: #000000;">color</i></button>-->
+</div>
+    </div>
+    <div class="col-lg-3">
+    <div>
+<input id="thickness" data-slider-id='ex1Slider' type="text" style="background: #BABABA" data-slider-min="0" data-slider-max="20"
+data-slider-step="1" data-slider-value="14" />
+</div>
+    </div>
+    <div class="col-lg-3">
+    <button ng-click="connect('request')">Connect</button>
+    </div>
+  </div>
+    </div>
+    <div class="col-lg-3 noPadding">
+      <ul id="messages">
+        <li ng-repeat="msg in messages track by $index">{{msg}}</ul>
+      <form action="">
+        <input id="m" ng-model="chatInput" autocomplete="off" />
+        <button ng-click="sendMsg()">Send</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+<!-- Single button -->
+
 <video autoplay id="media"></video>
-<canvas id="board" width="800" height="600"></canvas>
