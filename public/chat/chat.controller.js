@@ -449,8 +449,8 @@
                         _myMediaStream = stream;
 
                         //// Add the stream to our Video element via adapter.js
-                        var videoElement = document.querySelector('#media');
-                        attachMediaStream(videoElement, _myMediaStream);
+                        // var videoElement = document.querySelector('#media');
+                        // attachMediaStream(videoElement, _myMediaStream);
                         _myConnection = _myConnection || _createConnection(null);
 
                         // Add our stream to the peer connection
