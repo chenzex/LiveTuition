@@ -17,7 +17,10 @@ canvas{
 	/*top: 200px; */
 }
 
-video{
+#media{
+	height:0px;
+}
+#media2{
 	width: 280px;
 	height:200px;
 }

@@ -418,58 +418,58 @@
                 // New remote media stream was added
                 connection.onaddstream = function (event) {
                     // Create a new HTML5 Video element
-                    //var newVideoElement = document.createElement('video');
-                    //newVideoElement.className = 'video';
-                    //newVideoElement.autoplay = 'autoplay';
+                    // var newVideoElement = document.createElement('video');
+                    // newVideoElement.className = 'video';
+                    // newVideoElement.autoplay = 'autoplay';
 
-                    //// Attach the stream to the Video element via adapter.js
-                    //attachMediaStream(newVideoElement, event.stream);
+                    // //// Attach the stream to the Video element via adapter.js
+                    // attachMediaStream(newVideoElement, event.stream);
 
-                    //// Add the new Video element to the page
-                    //document.querySelector('body').appendChild(newVideoElement);
+                    // //// Add the new Video element to the page
+                    // document.querySelector('body').appendChild(newVideoElement);
 
-                    var videoElement = document.querySelector('#media');
+                    var videoElement = document.querySelector('#media2');
                     attachMediaStream(videoElement, event.stream);
                 };
 
                 return connection;
             }
-            function getMedia(){
+            function getMedia() {
                 getUserMedia(
-                        // Media constraints
-                        {
-                            video: true,
-                            audio: true
-                        },
-                        // Success callback
-                        function (stream) {
+                    // Media constraints
+                    {
+                        video: true,
+                        audio: true
+                    },
+                    // Success callback
+                    function (stream) {
 
 
-                            // Store off our stream so we can access it later if needed
-                            _myMediaStream = stream;
+                        // Store off our stream so we can access it later if needed
+                        _myMediaStream = stream;
 
-                            //// Add the stream to our Video element via adapter.js
-                            var videoElement = document.querySelector('#media');
-                            attachMediaStream(videoElement, _myMediaStream);
-                            _myConnection = _myConnection || _createConnection(null);
+                        //// Add the stream to our Video element via adapter.js
+                        var videoElement = document.querySelector('#media');
+                        attachMediaStream(videoElement, _myMediaStream);
+                        _myConnection = _myConnection || _createConnection(null);
 
-                            // Add our stream to the peer connection
-                            _myConnection.addStream(_myMediaStream);
+                        // Add our stream to the peer connection
+                        _myConnection.addStream(_myMediaStream);
 
-                            // Now that we have video, we can make a call
-                            //if (isCaller) {
-                            //  mediaReady = true;
-                            //if (mediaReady && guestMediaReady)
-                            sendOffer();
-                            //} else {
-                            //  hub.server.notifyMediaReady(GroupId);
-                            //}
-                        },
-                        // Error callback
-                        function (error) {
-                            // Super nifty error handling
-                            alert(JSON.stringify(error));
-                        });
+                        // Now that we have video, we can make a call
+                        //if (isCaller) {
+                        //  mediaReady = true;
+                        //if (mediaReady && guestMediaReady)
+                        sendOffer();
+                        //} else {
+                        //  hub.server.notifyMediaReady(GroupId);
+                        //}
+                    },
+                    // Error callback
+                    function (error) {
+                        // Super nifty error handling
+                        alert(JSON.stringify(error));
+                    });
             }
 
 
@@ -482,16 +482,58 @@
                     $scope.socket.emit('webrtc', msg2);
                     console.log("send request");
                 } else if (msg.type == "request") {
-                    getMedia();
-                    msg2 = {
-                        type: 'accept'
-                    }
-                    $scope.socket.emit('webrtc', msg2);
+                    BootstrapDialog.show({
+                        title: 'Video Request',
+                        message: 'XX is asking for video with you.',
+                        buttons: [{
+                            label: 'Accept',
+                            action: function (dialog) {
+                                getUserMedia(
+                                    // Media constraints
+                                    {
+                                        video: true,
+                                        audio: true
+                                    },
+                                    // Success callback
+                                    function (stream) {
+
+
+                                        _myMediaStream = stream;
+
+                                        var videoElement = document.querySelector('#media');
+                                        attachMediaStream(videoElement, _myMediaStream);
+                                        _myConnection = _myConnection || _createConnection(null);
+
+                                        // Add our stream to the peer connection
+                                        _myConnection.addStream(_myMediaStream);
+                                        msg2 = {
+                                            type: 'accept'
+                                        }
+                                        $scope.socket.emit('webrtc', msg2);
+
+                                        sendOffer();
+                                    },
+                                    // Error callback
+                                    function (error) {
+                                        // Super nifty error handling
+                                        alert(JSON.stringify(error));
+                                    });
+                                    dialog.close();
+                            }
+                        }, {
+                                label: 'Cancel',
+                                action: function (dialog) {
+                                    dialog.setMessage('Message 2');
+                                }
+                            }]
+                    });
+
+
                     console.log("send accept");
                 } else if (msg.type == "accept") {
                     console.log("receive accept");
                     getMedia();
-                    
+
                 } else if (msg.type == "webrtc") {
                     var message = JSON.parse(msg.content),
                         connection = _myConnection || _createConnection(null);
