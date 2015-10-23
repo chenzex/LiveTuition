@@ -1,47 +1,68 @@
-<div class="container-fluid noPadding" id="mainContainer">
+<div class="container-fluid" id="mainContainer">
   <div class="row">
-    <div class="col-lg-9 noPadding">
-      <div class="row">
-        <div class="col-lg-1 col-lg-offset-2">
-          <div class="btn-group">
-            <button id="toolBtn" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu">
-              <li><a name="pencil" href=""><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></li>
-              <li><a name="rect" href=""><span class="glyphicon glyphicon-unchecked" aria-hidden="true"></span></a></li>
-              <li><a name="line" href=""><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></a></li>
-              <li role="separator" class="divider"></li>
-              <li><a name="eraser" href=""><span class="glyphicon glyphicon-erase" aria-hidden="true"></span></a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="col-lg-3">
-          <div class="input-group colorpicker-component demo demo-auto colorpicker-element">
-            <input hidden="true" type="text" ng-model="color" id="colorpicker" value="#000000" class="form-control">
-            <!--<span class="input-group-addon"><i style="background-color: #000000;"></i></span>-->
-            <button class="input-group-addon btn-default"><i style="background-color: #000000;"></i>color</button>
-          </div>
-        </div>
-        <div class="col-lg-3">
-          <div>
-            <input id="thickness" data-slider-id='ex1Slider' type="text" style="background: #BABABA" data-slider-min="0" data-slider-max="20"
-            data-slider-step="1" data-slider-value="14" />
-          </div>
-        </div>
-        <div class="col-lg-3">
-          <button ng-click="connect('request')">Connect</button>
+    <div class="col-lg-9">
+      <div class="panel panel-default">
+        <div class="panel-body row" id="toolbarPanel">
+          <!--<div class="col-lg-2 col-lg-offset-2">-->
+
+            <div class="btn-group inline">
+              <button id="toolBtn" type="button" class="btn btn-defalut"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></button>
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+              </button>
+
+              <ul class="dropdown-menu" id="toolMenu">
+                <li><a name="pencil" href=""><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></li>
+                <li><a name="rect" href=""><span class="glyphicon glyphicon-unchecked" aria-hidden="true"></span></a></li>
+                <li><a name="line" href=""><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></a></li>
+                <li role="separator" class="divider"></li>
+                <li><a name="eraser" href=""><span class="glyphicon glyphicon-erase" aria-hidden="true"></span></a></li>
+              </ul>
+            </div>
+
+          <!--</div>-->
+          <!--<div class="col-lg-3">-->
+
+            <div class="inline">
+              <input id="thickness" data-slider-id='ex1Slider' type="text" style="background: #BABABA" data-slider-min="1" data-slider-max="12"
+              data-slider-step="1" data-slider-value="3" />
+            </div>
+
+
+          <!--</div>-->
+          <!--<div class="col-lg-2">-->
+
+            <div class="colorpicker-component demo demo-auto colorpicker-element inline">
+              <input hidden="true" type="text" ng-model="color" id="colorpicker" value="#000000" class="form-control">
+
+              <button class="add-on btn btn-default" id="cp"><i style="background-color: #000000;"></i><span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span></button>
+            </div>
+
+          <!--</div>-->
+          <!--<div class="col-lg-3">-->
+            <button class="btn btn-default">Clear</button>
+          <!--</div>-->
         </div>
       </div>
+      <div class="row">
+
+      </div>
       <div id="canvasContainer">
-        <canvas id="board" width="960" height="400"></canvas>
-        <canvas id="board2" width="960" height="400"></canvas>
-        <canvas id="board3" width="960" height="400"></canvas>
+        <canvas id="board" width="925" height="400"></canvas>
+        <canvas id="board2" width="925" height="400"></canvas>
+        <canvas id="board3" width="925" height="400"></canvas>
       </div>
     </div>
     <div class="col-lg-3 noPadding">
-      <video autoplay id="media"></video>
+      <div class="btn-group" role="group" aria-label="...">
+        <button ng-click="connect('request')" type="button" class="btn btn-default"><span class="glyphicon glyphicon-earphone" aria-hidden="true"></span></button>
+        <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span></button>
+      </div>
+      <audio autoplay id="media"></audio>
       <video autoplay id="media2"></video>
+      
       <ul id="messages">
         <li ng-repeat="msg in messages track by $index">{{msg}}</ul>
       <form action="">
@@ -66,4 +87,3 @@
 
 
 <!-- Single button -->
-

@@ -36,7 +36,10 @@
 
         $(function () {
             function createColorpickers() {
-                $('.demo-auto').colorpicker();
+                $('.demo-auto').colorpicker({
+                    // input: $('#colorpicker')[0]
+                }
+                    );
             }
             createColorpickers();
 
@@ -288,16 +291,16 @@
             $('.dropdown-menu li > a').click(function (e) {
                 $scope.tool = new tools[this.name]();
                 if (this.name == 'pencil') {
-                    $('#toolBtn').html("<span class='glyphicon glyphicon-pencil' aria-hidden='true'></span> <span class='caret'></span>");
+                    $('#toolBtn').html("<span class='glyphicon glyphicon-pencil' aria-hidden='true'></span>");
 
                 } else if (this.name == 'rect') {
-                    $('#toolBtn').html("<span class='glyphicon glyphicon-unchecked' aria-hidden='true'></span> <span class='caret'></span>");
+                    $('#toolBtn').html("<span class='glyphicon glyphicon-unchecked' aria-hidden='true'></span>");
 
                 } else if (this.name == 'line') {
-                    $('#toolBtn').html("<span class='glyphicon glyphicon-minus' aria-hidden='true'></span> <span class='caret'></span>");
+                    $('#toolBtn').html("<span class='glyphicon glyphicon-minus' aria-hidden='true'></span>");
 
                 } else if (this.name == 'eraser') {
-                    $('#toolBtn').html("<span class='glyphicon glyphicon-erase' aria-hidden='true'></span> <span class='caret'></span>");
+                    $('#toolBtn').html("<span class='glyphicon glyphicon-erase' aria-hidden='true'></span>");
 
                 }
             });
@@ -382,12 +385,6 @@
 
             function _createConnection() {
                 console.log('creating RTCPeerConnection...');
-                // gotAnswer = false;
-                // gotOffer = false;
-
-                // var extraIceServers = [];
-
-
                 var iceServers = {
                     "iceServers": [{
                         "url": "stun:stun.l.google.com:19302"
@@ -434,42 +431,76 @@
 
                 return connection;
             }
-            function getMedia() {
+            
+            function _createConnection2(type, iscaller) {
+                console.log('creating RTCPeerConnection...');
+                var iceServers = {
+                    "iceServers": [{
+                        "url": "stun:stun.l.google.com:19302"
+                    }, {
+                            "url": "turn:numb.viagenie.ca",
+                            "username": "webrtc@live.com",
+                            "credential": "muazkh"
+                        }]
+                };
+                var connection = new RTCPeerConnection(iceServers); 
+                connection.onicecandidate = function (event) {
+                    if (event.candidate) {
+                        var msg = {
+                            type: 'webrtc',
+                            content: JSON.stringify({ "candidate": event.candidate })
+                        }
+                        $scope.socket.emit('webrtc', msg);
+                    }
+                };
+
+                // New remote media stream was added
+                connection.onaddstream = function (event) {
+                    
+                    var mediaElement,constrain,msg2;
+                    if(type=='voice'){
+                        mediaElement = document.querySelector('#media');
+                        constrain = {video:false,audio:true};
+                }
+                    else if(type == 'video'){
+                        mediaElement = document.querySelector('#media2');
+                        constrain = {video:true,audio:true};
+                    }
+                    
+                    if(iscaller=='true'){
+                        msg2={type:''}
+                    }else{
+                        
+                    }
+                    attachMediaStream(mediaElement, event.stream);
+                };
+                
                 getUserMedia(
-                    // Media constraints
-                    {
-                        video: true,
-                        audio: true
-                    },
-                    // Success callback
-                    function (stream) {
+                                    // Media constraints
+                                    constrain,
+                                    // Success callback
+                                    function (stream) {
 
 
-                        // Store off our stream so we can access it later if needed
-                        _myMediaStream = stream;
+                                        _myMediaStream = stream;
 
-                        //// Add the stream to our Video element via adapter.js
-                        // var videoElement = document.querySelector('#media');
-                        // attachMediaStream(videoElement, _myMediaStream);
-                        _myConnection = _myConnection || _createConnection(null);
+                                        // var videoElement = document.querySelector('#media');
+                                        // attachMediaStream(videoElement, _myMediaStream);
+                                        _myConnection = _myConnection || _createConnection(null);
 
-                        // Add our stream to the peer connection
-                        _myConnection.addStream(_myMediaStream);
+                                        // Add our stream to the peer connection
+                                        _myConnection.addStream(_myMediaStream);
+                                        $scope.socket.emit('webrtc', msg2);
 
-                        // Now that we have video, we can make a call
-                        //if (isCaller) {
-                        //  mediaReady = true;
-                        //if (mediaReady && guestMediaReady)
-                        sendOffer();
-                        //} else {
-                        //  hub.server.notifyMediaReady(GroupId);
-                        //}
-                    },
-                    // Error callback
-                    function (error) {
-                        // Super nifty error handling
-                        alert(JSON.stringify(error));
-                    });
+                                        sendOffer();
+                                    },
+                                    // Error callback
+                                    function (error) {
+                                        // Super nifty error handling
+                                        alert(JSON.stringify(error));
+                                    });
+                
+                return connection;
             }
 
 
@@ -500,8 +531,8 @@
 
                                         _myMediaStream = stream;
 
-                                        var videoElement = document.querySelector('#media');
-                                        attachMediaStream(videoElement, _myMediaStream);
+                                        // var videoElement = document.querySelector('#media');
+                                        // attachMediaStream(videoElement, _myMediaStream);
                                         _myConnection = _myConnection || _createConnection(null);
 
                                         // Add our stream to the peer connection
@@ -518,7 +549,7 @@
                                         // Super nifty error handling
                                         alert(JSON.stringify(error));
                                     });
-                                    dialog.close();
+                                dialog.close();
                             }
                         }, {
                                 label: 'Cancel',
@@ -532,7 +563,28 @@
                     console.log("send accept");
                 } else if (msg.type == "accept") {
                     console.log("receive accept");
-                    getMedia();
+                    getUserMedia(
+                    // Media constraints
+                    {
+                        video: true,
+                        audio: true
+                    },
+                    // Success callback
+                    function (stream) {
+
+
+                        // Store off our stream so we can access it later if needed
+                        _myMediaStream = stream;
+                        _myConnection = _myConnection || _createConnection(null);
+                        _myConnection.addStream(_myMediaStream);
+
+                        sendOffer();
+                    },
+                    // Error callback
+                    function (error) {
+                        // Super nifty error handling
+                        alert(JSON.stringify(error));
+                    });
 
                 } else if (msg.type == "webrtc") {
                     var message = JSON.parse(msg.content),
