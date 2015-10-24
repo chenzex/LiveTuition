@@ -31,8 +31,8 @@ io.on('connection', function (socket) {
   socket.on('disconnect', function () {
     console.log('user disconnected');
   });
-  socket.on('chatMsg', function (msg) {
-    io.emit('chatMsg', msg);
+  socket.on('chat', function (msg) {
+    socket.broadcast.emit('chat', msg);
   });
   socket.on('trace', function (trace) {
     socket.broadcast.emit('trace', trace);

@@ -5,11 +5,12 @@
         .controller("ChatController", ChatController);
     function ChatController($scope) {
         $scope.messages = [];
-        $scope.socket = io.connect("https://live-chenze.rhcloud.com:8443");
-        // $scope.socket = io.connect("localhost:3000");
+        // $scope.socket = io.connect("https://live-chenze.rhcloud.com:8443");
+        $scope.socket = io.connect("localhost:3000");
 
-        $scope.socket.on('chatMsg', function (msg) {
-            $scope.messages.push(msg);
+        $scope.socket.on('chat', function (chat) {
+            chat.self = false;
+            $scope.chatGenerator(chat);
         });
 
         $scope.socket.on('trace', function (trace) {
@@ -362,6 +363,98 @@
                 }
             }
 
+            $scope.chatGenerator = function (chat) {
+                //alert(chat.time);
+                
+                // <li class="right clearfix">
+                //     <span class="chat-img pull-right">
+                //         <img src="http://placehold.it/50/FA6F57/fff&text=ME" alt="User Avatar" class="img-circle" />
+                //     </span>
+                //     <div class="chat-body clearfix">
+                //         <div class="header">
+                //             <small class=" text-muted">
+                //                  <span class="glyphicon glyphicon-time"></span>13 mins ago</small>
+                //             <strong class="pull-right primary-font">Bhaumik Patel</strong>
+                //         </div>
+                //         <p>
+                //                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare
+                //                     dolor, quis ullamcorper ligula sodales.
+                //         </p>
+                //     </div>
+                // </li>
+                var li = document.createElement("li");
+                
+                li.className += "clearfix";
+                var span = document.createElement("span");
+                span.className +="chat-img";
+                
+                var image = document.createElement("img");
+                image.setAttribute("alt", "User Avatar");
+                image.className +="img-circle";
+                
+                
+                var div1 = document.createElement("div");
+                div1.className += "chat-body clearfix";
+                var div2 = document.createElement("div");
+                div2.className += "header";
+                
+                var small = document.createElement("small");
+                small.className += "text-muted";
+                var span2 = document.createElement("span");
+                span2.className += "glyphicon glyphicon-time";
+                small.appendChild(span2);
+                small.innerHTML += chat.time;
+                
+                var strong = document.createElement("strong");
+                strong.className += "primary-font";
+                strong.innerHTML += chat.sender;
+                
+                var p = document.createElement("p");
+                p.innerHTML += chat.content;
+                
+                
+                if(chat.self){
+                    li.className += " right";
+                    span.className += " pull-right";
+                    image.setAttribute("src","http://placehold.it/50/FA6F57/fff&text=ME");
+                    strong.className += " pull-right";
+                }
+                else{
+                    li.className += " left";
+                    span.className += " pull-left";
+                    image.setAttribute("src","http://placehold.it/50/55C1E7/fff&text=U");
+                    strong.className += " pull-left";
+                }
+                
+                span.appendChild(image);
+                div2.appendChild(small);
+                div2.appendChild(strong);
+                div1.appendChild(div2);
+                div1.appendChild(p);
+                
+                
+                li.appendChild(span);
+                li.appendChild(div1);
+                document.getElementById('chat-ul').appendChild(li);
+                
+                
+     
+            }
+            var sendChat = function () {
+                var chat;
+                chat = {
+                    content: $('#btn-input').val(),
+                    time: new Date().toLocaleTimeString(),
+                    sender: 'BunnyQ',
+                    self: true
+                }
+                $scope.chatGenerator(chat);
+                $scope.socket.emit('chat', chat);
+            }
+            $('#btn-chat').click(function(){
+                sendChat();
+            });
+
             var _myConnection, // My RTCPeerConnection instance
                 _myMediaStream; // My MediaStream instance
                 
@@ -414,16 +507,18 @@
 
                 // New remote media stream was added
                 connection.onaddstream = function (event) {
-                    // Create a new HTML5 Video element
+
                     // var newVideoElement = document.createElement('video');
                     // newVideoElement.className = 'video';
                     // newVideoElement.autoplay = 'autoplay';
 
-                    // //// Attach the stream to the Video element via adapter.js
+                    
                     // attachMediaStream(newVideoElement, event.stream);
 
-                    // //// Add the new Video element to the page
-                    // document.querySelector('body').appendChild(newVideoElement);
+                    
+                    // var parent = document.querySelector('#collapseOne');
+                    // parent.insertBefore(newVideoElement, parent.childNodes[0]);
+   
 
                     var videoElement = document.querySelector('#media2');
                     attachMediaStream(videoElement, event.stream);
@@ -431,7 +526,7 @@
 
                 return connection;
             }
-            
+
             function _createConnection2(type, iscaller) {
                 console.log('creating RTCPeerConnection...');
                 var iceServers = {
@@ -443,7 +538,7 @@
                             "credential": "muazkh"
                         }]
                 };
-                var connection = new RTCPeerConnection(iceServers); 
+                var connection = new RTCPeerConnection(iceServers);
                 connection.onicecandidate = function (event) {
                     if (event.candidate) {
                         var msg = {
@@ -456,50 +551,50 @@
 
                 // New remote media stream was added
                 connection.onaddstream = function (event) {
-                    
-                    var mediaElement,constrain,msg2;
-                    if(type=='voice'){
+
+                    var mediaElement, constrain, msg2;
+                    if (type == 'voice') {
                         mediaElement = document.querySelector('#media');
-                        constrain = {video:false,audio:true};
-                }
-                    else if(type == 'video'){
-                        mediaElement = document.querySelector('#media2');
-                        constrain = {video:true,audio:true};
+                        constrain = { video: false, audio: true };
                     }
-                    
-                    if(iscaller=='true'){
-                        msg2={type:''}
-                    }else{
-                        
+                    else if (type == 'video') {
+                        mediaElement = document.querySelector('#media2');
+                        constrain = { video: true, audio: true };
+                    }
+
+                    if (iscaller == 'true') {
+                        msg2 = { type: '' }
+                    } else {
+
                     }
                     attachMediaStream(mediaElement, event.stream);
                 };
-                
+
                 getUserMedia(
-                                    // Media constraints
-                                    constrain,
-                                    // Success callback
-                                    function (stream) {
+                // Media constraints
+                    constrain,
+                    // Success callback
+                    function (stream) {
 
 
-                                        _myMediaStream = stream;
+                        _myMediaStream = stream;
 
-                                        // var videoElement = document.querySelector('#media');
-                                        // attachMediaStream(videoElement, _myMediaStream);
-                                        _myConnection = _myConnection || _createConnection(null);
+                        // var videoElement = document.querySelector('#media');
+                        // attachMediaStream(videoElement, _myMediaStream);
+                        _myConnection = _myConnection || _createConnection(null);
 
-                                        // Add our stream to the peer connection
-                                        _myConnection.addStream(_myMediaStream);
-                                        $scope.socket.emit('webrtc', msg2);
+                        // Add our stream to the peer connection
+                        _myConnection.addStream(_myMediaStream);
+                        $scope.socket.emit('webrtc', msg2);
 
-                                        sendOffer();
-                                    },
-                                    // Error callback
-                                    function (error) {
-                                        // Super nifty error handling
-                                        alert(JSON.stringify(error));
-                                    });
-                
+                        sendOffer();
+                    },
+                    // Error callback
+                    function (error) {
+                        // Super nifty error handling
+                        alert(JSON.stringify(error));
+                    });
+
                 return connection;
             }
 
@@ -564,27 +659,27 @@
                 } else if (msg.type == "accept") {
                     console.log("receive accept");
                     getUserMedia(
-                    // Media constraints
-                    {
-                        video: true,
-                        audio: true
-                    },
-                    // Success callback
-                    function (stream) {
+                        // Media constraints
+                        {
+                            video: true,
+                            audio: true
+                        },
+                        // Success callback
+                        function (stream) {
 
 
-                        // Store off our stream so we can access it later if needed
-                        _myMediaStream = stream;
-                        _myConnection = _myConnection || _createConnection(null);
-                        _myConnection.addStream(_myMediaStream);
+                            // Store off our stream so we can access it later if needed
+                            _myMediaStream = stream;
+                            _myConnection = _myConnection || _createConnection(null);
+                            _myConnection.addStream(_myMediaStream);
 
-                        sendOffer();
-                    },
-                    // Error callback
-                    function (error) {
-                        // Super nifty error handling
-                        alert(JSON.stringify(error));
-                    });
+                            sendOffer();
+                        },
+                        // Error callback
+                        function (error) {
+                            // Super nifty error handling
+                            alert(JSON.stringify(error));
+                        });
 
                 } else if (msg.type == "webrtc") {
                     var message = JSON.parse(msg.content),
