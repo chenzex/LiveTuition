@@ -2,12 +2,19 @@ body{
 	background-image: url('../src/img/background.png')
 }
 
+div { 
+        -moz-user-select: none; 
+        -khtml-user-select: none; 
+        -webkit-user-select: none; 
+        -o-user-select: none; 
+} 
+
 .noPadding{
 	padding:0px !important;
 }
-#colorpicker{
+/*#colorpicker{
 	display: none;
-}
+}*/
 
 #canvasContainer{
 	/*border:1px solid #000000;*/
@@ -21,6 +28,10 @@ canvas{
 	/*border:1px solid #000000;*/
 	position: absolute; 
 	/*top: 200px; */
+}
+
+.color-span{
+	border-radius: 2px;
 }
 
 #media{
@@ -43,18 +54,28 @@ canvas{
 	z-index: 1;
 }
 
-#toolMenu a{
+.toolbar-btn{
+	background-color: rgba(190,190,190,0.1) !important;
+}
+
+.toolbar-menu a{
 	padding: 6px 12px 6px 12px !important;
 	width: 63px;
 }
 
-#toolMenu, #toolMenu li{
+.toolbar-menu, .toolbar-menu li{
+	background-color: rgba(190,190,190,0.1) !important;
 	width: 65px !important;
 	min-width: 65px !important;
 }
 
 #toolbarPanel{
 	padding: 5px !important;
+}
+
+#colorMenu a{
+	padding-top: 1px !important;
+	padding-bottom: 1px !important;
 }
 
 .inline{
@@ -64,6 +85,9 @@ canvas{
 .site-navbar{
 	background-color: #A8D4DA !important;
 	margin-bottom: 0px !important;
+}
+.slider.slider-horizontal{
+	width : 130px !important;
 }
 
 #accordion{

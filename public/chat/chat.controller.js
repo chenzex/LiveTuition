@@ -5,8 +5,8 @@
         .controller("ChatController", ChatController);
     function ChatController($scope) {
         $scope.messages = [];
-        // $scope.socket = io.connect("https://live-chenze.rhcloud.com:8443");
-        $scope.socket = io.connect("localhost:3000");
+        $scope.socket = io.connect("https://live-chenze.rhcloud.com:8443");
+        // $scope.socket = io.connect("localhost:3000");
 
         $scope.socket.on('chat', function (chat) {
             chat.self = false;
@@ -60,6 +60,10 @@
                 }
             });
 
+            $(".toolbar-btn").mouseup(function () {
+                $(this).blur();
+            })
+
 
             var img_update = function () {
                 $scope.ctx3.drawImage(canvas[0], 0, 0);
@@ -87,7 +91,7 @@
                     };
                     Pencil.prototype.mousemove = function (e) {
                         if (this.started) {
-                            $scope.ctx1.strokeStyle = $('#colorpicker')[0].value;
+                            $scope.ctx1.strokeStyle = $scope.color;
 
                             this.points.push({ x: e.x, y: e.y });
 
@@ -144,6 +148,17 @@
                             $scope.sendTrace(trace);
                         }
                     };
+                    Pencil.prototype.mouseleave = function (e) {
+                        if (this.started) {
+                            this.points.length = 0;
+                            this.started = false;
+                            img_update();
+                            var trace = {
+                                type: 'mouseup'
+                            };
+                            $scope.sendTrace(trace);
+                        }
+                    };
                     return Pencil;
                 })(),
                 rect: Rect = (function () {
@@ -168,7 +183,7 @@
                         if (!w || !h) {
                             return;
                         }
-                        $scope.ctx1.strokeStyle = $('#colorpicker')[0].value;
+                        $scope.ctx1.strokeStyle = $scope.color;
                         $scope.ctx1.strokeRect(x, y, w, h);
                         var trace = {
                             x: x,
@@ -182,13 +197,15 @@
                         }
                         $scope.sendTrace(trace);
                     };
-                    Rect.prototype.mouseup = function (ev) {
+                    Rect.prototype.mouseup = function (e) {
                         this.started = false;
                         img_update();
                         var trace = {
                             type: 'mouseup'
                         };
                         $scope.sendTrace(trace);
+                    };
+                    Rect.prototype.mouseleave = function (e) {
                     };
                     return Rect;
                 })(),
@@ -205,7 +222,7 @@
                         if (!this.started) {
                             return;
                         }
-                        $scope.ctx1.strokeStyle = $('#colorpicker')[0].value;
+                        $scope.ctx1.strokeStyle = $scope.color;
                         $scope.ctx1.clearRect(0, 0, canvas[0].width, canvas[0].height);
                         $scope.ctx1.beginPath();
                         $scope.ctx1.moveTo(this.x0, this.y0);
@@ -232,6 +249,8 @@
                             type: 'mouseup'
                         };
                         $scope.sendTrace(trace);
+                    };
+                    Line.prototype.mouseleave = function (e) {
                     };
                     return Line;
                 })(),
@@ -272,6 +291,8 @@
                             $scope.sendTrace(trace);
                         }
                     };
+                    Eraser.prototype.mouseleave = function (e) {
+                    };
                     return Eraser;
                 })()
             }
@@ -279,6 +300,7 @@
 
             $scope.tool = new tools['pencil']();
             $scope.tool2 = new tools['pencil']();
+            $scope.color = '#000000';
             function ev_canvas(e) {
                 e.x = e.pageX - $(this).offset().left;
                 e.y = e.pageY - $(this).offset().top;
@@ -288,22 +310,28 @@
             canvas.mousedown(ev_canvas);
             canvas.mousemove(ev_canvas);
             canvas.mouseup(ev_canvas);
+            canvas.mouseleave(ev_canvas);
 
-            $('.dropdown-menu li > a').click(function (e) {
+            $('#toolMenu li > a').click(function (e) {
                 $scope.tool = new tools[this.name]();
                 if (this.name == 'pencil') {
-                    $('#toolBtn').html("<span class='glyphicon glyphicon-pencil' aria-hidden='true'></span>");
+                    $('#toolBtn').html("<span class='glyphicon glyphicon-pencil' aria-hidden='true'> <span class='caret'></span></span>");
 
                 } else if (this.name == 'rect') {
-                    $('#toolBtn').html("<span class='glyphicon glyphicon-unchecked' aria-hidden='true'></span>");
+                    $('#toolBtn').html("<span class='glyphicon glyphicon-unchecked' aria-hidden='true'> <span class='caret'></span></span>");
 
                 } else if (this.name == 'line') {
-                    $('#toolBtn').html("<span class='glyphicon glyphicon-minus' aria-hidden='true'></span>");
+                    $('#toolBtn').html("<span class='glyphicon glyphicon-minus' aria-hidden='true'> <span class='caret'></span></span>");
 
                 } else if (this.name == 'eraser') {
-                    $('#toolBtn').html("<span class='glyphicon glyphicon-erase' aria-hidden='true'></span>");
+                    $('#toolBtn').html("<span class='glyphicon glyphicon-erase' aria-hidden='true'> <span class='caret'></span></span>");
 
                 }
+            });
+
+            $('#colorMenu li > a').click(function (e) {
+                $scope.color = this.name;
+                document.getElementById('colorSpan').style.background = this.name;
             });
 
             $("#btn-input").keyup(function (event) {
@@ -311,6 +339,11 @@
                     $("#btn-chat").click();
                 }
             });
+
+            $scope.clear = function () {
+                $scope.ctx3.clearRect(0, 0, $scope.ctx3.canvas.width, $scope.ctx3.canvas.height);
+                $scope.socket.emit('trace', { tool: 'clear' });
+            }
 
             $scope.draw = function (trace) {
                 if (trace.type == 'mouseup') {
@@ -366,6 +399,8 @@
                 } else if (trace.tool == 'eraser') {
                     $scope.ctx2.lineWidth = trace.thickness;
                     $scope.ctx3.clearRect(trace.x1, trace.y1, trace.x2, trace.y2);
+                } else if (trace.tool == 'clear') {
+                    $scope.ctx3.clearRect(0, 0, $scope.ctx3.canvas.width, $scope.ctx3.canvas.height);
                 }
             }
 
@@ -517,7 +552,7 @@
                     document.getElementById('media2').style.display = "block";
                     var videoElement = document.querySelector('#media2');
                     attachMediaStream(videoElement, event.stream);
-                    document.getElementById('videoSpan').className="glyphicon glyphicon-off";
+                    document.getElementById('videoSpan').className = "glyphicon glyphicon-off";
                 };
 
                 return connection;
@@ -546,7 +581,7 @@
                         videos[i].style.display = "none";
                     }
                     document.getElementById('chat-main-panel').style.height = "410px";
-                    document.getElementById('videoSpan').className="glyphicon glyphicon-facetime-video";
+                    document.getElementById('videoSpan').className = "glyphicon glyphicon-facetime-video";
                     document.getElementById('videoBtn').blur();
                     
                     //_myConnection.close();
@@ -634,7 +669,7 @@
                         videos[i].style.display = "none";
                     }
                     document.getElementById('chat-main-panel').style.height = "410px";
-                    document.getElementById('videoSpan').className="glyphicon glyphicon-facetime-video";
+                    document.getElementById('videoSpan').className = "glyphicon glyphicon-facetime-video";
                     document.getElementById('videoBtn').blur();
                     //_myConnection.close();
                 } else if (msg.type == "webrtc") {
@@ -687,11 +722,11 @@
                 }
 
             }
-            
-            $scope.videoClick = function(){
-                if(_myMediaStream==null || _myMediaStream.active==false){
+
+            $scope.videoClick = function () {
+                if (_myMediaStream == null || _myMediaStream.active == false) {
                     $scope.connect("request");
-                }else{
+                } else {
                     $scope.connect("close");
                 }
             }
