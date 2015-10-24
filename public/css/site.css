@@ -27,9 +27,10 @@ canvas{
 	height:0px;
 }
 #media2{
-	width: 280px;
-	height:0px;
-	/*border:1px solid #000000;*/
+	width: 320px;
+	/*height:20%;*/
+	display: none;
+	margin: auto;
 }
 
 #board{
@@ -68,6 +69,7 @@ canvas{
 #accordion{
 	background-color: #A8D4DA;
 }
+
 
 .chat-container{
 	padding-top: 10px !important;
@@ -109,10 +111,16 @@ canvas{
     margin-right: 5px;
 }
 
-.panel-body
+#chat-main-panel
 {
-    overflow-y: scroll;
-    height: 400px;
+    overflow-y: auto;
+    /*height: 205px;*/
+	height: 410px;
+}
+
+.panel-primary
+{
+	height: 505px;
 }
 
 ::-webkit-scrollbar-track
@@ -133,8 +141,9 @@ canvas{
     background-color: #555;
 }
 
-
-
-
+#videoBtn{
+	border: none;
+	background-color: transparent;
+}
 
 

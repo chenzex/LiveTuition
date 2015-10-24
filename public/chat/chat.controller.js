@@ -5,8 +5,8 @@
         .controller("ChatController", ChatController);
     function ChatController($scope) {
         $scope.messages = [];
-        $scope.socket = io.connect("https://live-chenze.rhcloud.com:8443");
-        // $scope.socket = io.connect("localhost:3000");
+        // $scope.socket = io.connect("https://live-chenze.rhcloud.com:8443");
+        $scope.socket = io.connect("localhost:3000");
 
         $scope.socket.on('chat', function (chat) {
             chat.self = false;
@@ -306,6 +306,12 @@
                 }
             });
 
+            $("#btn-input").keyup(function (event) {
+                if (event.keyCode == 13) {
+                    $("#btn-chat").click();
+                }
+            });
+
             $scope.draw = function (trace) {
                 if (trace.type == 'mouseup') {
                     img_update2();
@@ -364,83 +370,71 @@
             }
 
             $scope.chatGenerator = function (chat) {
-                //alert(chat.time);
-                
-                // <li class="right clearfix">
-                //     <span class="chat-img pull-right">
-                //         <img src="http://placehold.it/50/FA6F57/fff&text=ME" alt="User Avatar" class="img-circle" />
-                //     </span>
-                //     <div class="chat-body clearfix">
-                //         <div class="header">
-                //             <small class=" text-muted">
-                //                  <span class="glyphicon glyphicon-time"></span>13 mins ago</small>
-                //             <strong class="pull-right primary-font">Bhaumik Patel</strong>
-                //         </div>
-                //         <p>
-                //                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare
-                //                     dolor, quis ullamcorper ligula sodales.
-                //         </p>
-                //     </div>
-                // </li>
                 var li = document.createElement("li");
-                
+
                 li.className += "clearfix";
                 var span = document.createElement("span");
-                span.className +="chat-img";
-                
+                span.className += "chat-img";
+
                 var image = document.createElement("img");
                 image.setAttribute("alt", "User Avatar");
-                image.className +="img-circle";
-                
-                
+                image.className += "img-circle";
+
+
                 var div1 = document.createElement("div");
                 div1.className += "chat-body clearfix";
                 var div2 = document.createElement("div");
                 div2.className += "header";
-                
+
                 var small = document.createElement("small");
                 small.className += "text-muted";
                 var span2 = document.createElement("span");
                 span2.className += "glyphicon glyphicon-time";
                 small.appendChild(span2);
                 small.innerHTML += chat.time;
-                
+
                 var strong = document.createElement("strong");
                 strong.className += "primary-font";
                 strong.innerHTML += chat.sender;
-                
+
                 var p = document.createElement("p");
                 p.innerHTML += chat.content;
-                
-                
-                if(chat.self){
+
+
+                if (chat.self) {
                     li.className += " right";
                     span.className += " pull-right";
-                    image.setAttribute("src","http://placehold.it/50/FA6F57/fff&text=ME");
+                    image.setAttribute("src", "http://placehold.it/50/FA6F57/fff&text=ME");
                     strong.className += " pull-right";
+                    // strong.className += " pull-right";
+                    div2.appendChild(small);
+                    div2.appendChild(strong);
                 }
-                else{
+                else {
                     li.className += " left";
                     span.className += " pull-left";
-                    image.setAttribute("src","http://placehold.it/50/55C1E7/fff&text=U");
-                    strong.className += " pull-left";
+                    image.setAttribute("src", "http://placehold.it/50/55C1E7/fff&text=U");
+                    small.className += " pull-right";
+                    div2.appendChild(strong);
+                    div2.appendChild(small);
                 }
-                
+
                 span.appendChild(image);
-                div2.appendChild(small);
-                div2.appendChild(strong);
+
                 div1.appendChild(div2);
                 div1.appendChild(p);
-                
-                
+
+
                 li.appendChild(span);
                 li.appendChild(div1);
                 document.getElementById('chat-ul').appendChild(li);
-                
-                
-     
+
+                var panel = document.getElementById('chat-main-panel');
+                panel.scrollTop = panel.scrollHeight;
+
             }
             var sendChat = function () {
+                if ($('#btn-input').val() == "") return;
                 var chat;
                 chat = {
                     content: $('#btn-input').val(),
@@ -448,10 +442,11 @@
                     sender: 'BunnyQ',
                     self: true
                 }
+                $('#btn-input').val("");
                 $scope.chatGenerator(chat);
                 $scope.socket.emit('chat', chat);
             }
-            $('#btn-chat').click(function(){
+            $('#btn-chat').click(function () {
                 sendChat();
             });
 
@@ -518,85 +513,17 @@
                     
                     // var parent = document.querySelector('#collapseOne');
                     // parent.insertBefore(newVideoElement, parent.childNodes[0]);
-   
-
+                    document.getElementById('chat-main-panel').style.height = "170px";
+                    document.getElementById('media2').style.display = "block";
                     var videoElement = document.querySelector('#media2');
                     attachMediaStream(videoElement, event.stream);
+                    document.getElementById('videoSpan').className="glyphicon glyphicon-off";
                 };
 
                 return connection;
             }
 
-            function _createConnection2(type, iscaller) {
-                console.log('creating RTCPeerConnection...');
-                var iceServers = {
-                    "iceServers": [{
-                        "url": "stun:stun.l.google.com:19302"
-                    }, {
-                            "url": "turn:numb.viagenie.ca",
-                            "username": "webrtc@live.com",
-                            "credential": "muazkh"
-                        }]
-                };
-                var connection = new RTCPeerConnection(iceServers);
-                connection.onicecandidate = function (event) {
-                    if (event.candidate) {
-                        var msg = {
-                            type: 'webrtc',
-                            content: JSON.stringify({ "candidate": event.candidate })
-                        }
-                        $scope.socket.emit('webrtc', msg);
-                    }
-                };
 
-                // New remote media stream was added
-                connection.onaddstream = function (event) {
-
-                    var mediaElement, constrain, msg2;
-                    if (type == 'voice') {
-                        mediaElement = document.querySelector('#media');
-                        constrain = { video: false, audio: true };
-                    }
-                    else if (type == 'video') {
-                        mediaElement = document.querySelector('#media2');
-                        constrain = { video: true, audio: true };
-                    }
-
-                    if (iscaller == 'true') {
-                        msg2 = { type: '' }
-                    } else {
-
-                    }
-                    attachMediaStream(mediaElement, event.stream);
-                };
-
-                getUserMedia(
-                // Media constraints
-                    constrain,
-                    // Success callback
-                    function (stream) {
-
-
-                        _myMediaStream = stream;
-
-                        // var videoElement = document.querySelector('#media');
-                        // attachMediaStream(videoElement, _myMediaStream);
-                        _myConnection = _myConnection || _createConnection(null);
-
-                        // Add our stream to the peer connection
-                        _myConnection.addStream(_myMediaStream);
-                        $scope.socket.emit('webrtc', msg2);
-
-                        sendOffer();
-                    },
-                    // Error callback
-                    function (error) {
-                        // Super nifty error handling
-                        alert(JSON.stringify(error));
-                    });
-
-                return connection;
-            }
 
 
             $scope.connect = function (msg) {
@@ -607,7 +534,24 @@
                     }
                     $scope.socket.emit('webrtc', msg2);
                     console.log("send request");
-                } else if (msg.type == "request") {
+                } else if (msg == 'close') {
+                    msg2 = {
+                        type: 'close'
+                    }
+                    $scope.socket.emit('webrtc', msg2);
+                    _myMediaStream.stop();
+                    var videos = document.getElementsByTagName("video");
+                    for (var i = 0; i < videos.length; i++) {
+                        videos[i].pause();
+                        videos[i].style.display = "none";
+                    }
+                    document.getElementById('chat-main-panel').style.height = "410px";
+                    document.getElementById('videoSpan').className="glyphicon glyphicon-facetime-video";
+                    document.getElementById('videoBtn').blur();
+                    
+                    //_myConnection.close();
+                }
+                else if (msg.type == "request") {
                     BootstrapDialog.show({
                         title: 'Video Request',
                         message: 'XX is asking for video with you.',
@@ -658,6 +602,7 @@
                     console.log("send accept");
                 } else if (msg.type == "accept") {
                     console.log("receive accept");
+                    document.getElementById('videoBtn').blur();
                     getUserMedia(
                         // Media constraints
                         {
@@ -681,6 +626,17 @@
                             alert(JSON.stringify(error));
                         });
 
+                } else if (msg.type == "close") {
+                    _myMediaStream.stop();
+                    var videos = document.getElementsByTagName("video");
+                    for (var i = 0; i < videos.length; i++) {
+                        videos[i].pause();
+                        videos[i].style.display = "none";
+                    }
+                    document.getElementById('chat-main-panel').style.height = "410px";
+                    document.getElementById('videoSpan').className="glyphicon glyphicon-facetime-video";
+                    document.getElementById('videoBtn').blur();
+                    //_myConnection.close();
                 } else if (msg.type == "webrtc") {
                     var message = JSON.parse(msg.content),
                         connection = _myConnection || _createConnection(null);
@@ -731,6 +687,16 @@
                 }
 
             }
+            
+            $scope.videoClick = function(){
+                if(_myMediaStream==null || _myMediaStream.active==false){
+                    $scope.connect("request");
+                }else{
+                    $scope.connect("close");
+                }
+            }
+
+
             _myConnection = _myConnection || _createConnection(null);
         });
     }

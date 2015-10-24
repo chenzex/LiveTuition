@@ -50,52 +50,26 @@
     <div class="panel panel-primary">
       <div class="panel-heading" id="accordion">
         <span class="glyphicon glyphicon-comment"></span> Chat
-        <div class="btn-group pull-right">
-          <a type="button" class="btn btn-default btn-xs" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-            <span class="glyphicon glyphicon-chevron-down"></span>
-          </a>
-        </div>
+        <button ng-click="videoClick()" class="pull-right" id="videoBtn">
+          <!--<a ng-click="videoClick()" type="button" class="btn btn-default btn-xs">-->
+            <span  class="glyphicon glyphicon-facetime-video" id="videoSpan" aria-hidden="true">
+          <!--</a>-->
+        </button>
       </div>
-      <div class="panel-collapse collapse" id="collapseOne">
+      <div class="panel-collapse" id="collapseOne">
         <video autoplay id="media2"></video>
-        <div class="panel-body">
+        <div class="panel-body"  id="chat-main-panel">
           <ul class="chat" id="chat-ul"></ul>
         </div>
         <div class="panel-footer">
           <div class="input-group">
             <input id="btn-input" type="text" class="form-control input-sm" placeholder="Type your message here..." />
             <span class="input-group-btn">
-                            <button class="btn btn-warning btn-sm" id="btn-chat">
-                                Send</button>
-                        </span>
+              <button class="btn btn-warning btn-sm" id="btn-chat"> Send</button>
+            </span>
           </div>
         </div>
       </div>
     </div>
   </div>
   <div>
-
-
-
-
-
-
-
-
-
-    <button ng-click="connect('request')" type="button" class="btn btn-default"><span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span></button>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <!-- Single button -->
