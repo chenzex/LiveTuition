@@ -3,12 +3,15 @@
     angular
         .module("LiveTuition")
         .controller("ChatController", ChatController);
+
+
     function ChatController($scope, $rootScope) {
         $scope.messages = [];
         if ($rootScope.socket == null)
             $rootScope.socket = io.connect("https://live-chenze.rhcloud.com:8443");
         // $rootScope.socket = io.connect("localhost:3000");
         
+        // handle socket.io messages
         $rootScope.socket.on('chat', function (chat) {
             chat.self = false;
             $scope.chatGenerator(chat);
@@ -25,15 +28,15 @@
         $scope.sendMsg = function () {
             $scope.chatGenerator($scope.chatInput);
             var msg2 = {
-                targetId : $rootScope.user.targetId,
-                content : $scope.chatInput
+                targetId: $rootScope.user.targetId,
+                content: $scope.chatInput
             }
             $rootScope.socket.emit('chat', msg2);
             $scope.chatInput = "";
         };
 
         $scope.sendTrace = function (trace) {
-            if($rootScope.user.targetId == null)return;
+            if ($rootScope.user.targetId == null) return;
             trace.targetId = $rootScope.user.targetId;
             $rootScope.socket.emit('trace', trace);
         }
@@ -44,18 +47,9 @@
 
 
         $(function () {
-            $(document).on('click', '.btn-connect', function () {
-                var connId = $(this).attr('value');
-                var msg2 = {
-                    type: 'request',
-                    targetId: connId,
-                    sourceUser: $rootScope.user
-                }
-                $rootScope.socket.emit('user', msg2)
-                BootstrapDialog.alert('Connection request sent.');
-            });
+            
 
-
+            // init blackboard block
             var canvas = $('#board');
             $scope.ctx1 = canvas[0].getContext("2d");
             $scope.ctx1.lineJoin = $scope.ctx1.lineCap = 'round';
@@ -76,14 +70,7 @@
             })
 
 
-            var img_update = function () {
-                $scope.ctx3.drawImage(canvas[0], 0, 0);
-                $scope.ctx1.clearRect(0, 0, canvas[0].width, canvas[0].height);
-            };
-            var img_update2 = function () {
-                $scope.ctx3.drawImage($('#board2')[0], 0, 0);
-                $scope.ctx2.clearRect(0, 0, canvas[0].width, canvas[0].height);
-            };
+            // Define 4 tools
             var Pencil, Rect, Line, Eraser;
             var tools = {
                 pencil: Pencil = (function () {
@@ -126,15 +113,15 @@
                             $scope.ctx1.stroke();
 
 
-                                var trace = {
-                                    points: this.points,
-                                    type: e.type,
-                                    tool: 'pencil',
-                                    thickness: $scope.ctx1.lineWidth,
-                                    color: $scope.ctx1.strokeStyle,
-                                    targetId: $rootScope.user.targetId
-                                };
-                                $scope.sendTrace(trace);
+                            var trace = {
+                                points: this.points,
+                                type: e.type,
+                                tool: 'pencil',
+                                thickness: $scope.ctx1.lineWidth,
+                                color: $scope.ctx1.strokeStyle,
+                                targetId: $rootScope.user.targetId
+                            };
+                            $scope.sendTrace(trace);
                         }
                     };
                     Pencil.prototype.mouseup = function (e) {
@@ -146,7 +133,7 @@
                                 type: 'mouseup',
                                 targetId: $rootScope.user.targetId
                             };
-                            
+
                             $scope.sendTrace(trace);
                         }
                     };
@@ -299,6 +286,14 @@
                 })()
             }
 
+            var img_update = function () {
+                $scope.ctx3.drawImage(canvas[0], 0, 0);
+                $scope.ctx1.clearRect(0, 0, canvas[0].width, canvas[0].height);
+            };
+            var img_update2 = function () {
+                $scope.ctx3.drawImage($('#board2')[0], 0, 0);
+                $scope.ctx2.clearRect(0, 0, canvas[0].width, canvas[0].height);
+            };
 
             $scope.tool = new tools['pencil']();
             $scope.tool2 = new tools['pencil']();
@@ -314,37 +309,11 @@
             canvas.mouseup(ev_canvas);
             canvas.mouseleave(ev_canvas);
 
-            $('#toolMenu li > a').click(function (e) {
-                $scope.tool = new tools[this.name]();
-                if (this.name == 'pencil') {
-                    $('#toolBtn').html("<span class='glyphicon glyphicon-pencil' aria-hidden='true'> <span class='caret'></span></span>");
 
-                } else if (this.name == 'rect') {
-                    $('#toolBtn').html("<span class='glyphicon glyphicon-unchecked' aria-hidden='true'> <span class='caret'></span></span>");
-
-                } else if (this.name == 'line') {
-                    $('#toolBtn').html("<span class='glyphicon glyphicon-minus' aria-hidden='true'> <span class='caret'></span></span>");
-
-                } else if (this.name == 'eraser') {
-                    $('#toolBtn').html("<span class='glyphicon glyphicon-erase' aria-hidden='true'> <span class='caret'></span></span>");
-
-                }
-            });
-
-            $('#colorMenu li > a').click(function (e) {
-                $scope.color = this.name;
-                document.getElementById('colorSpan').style.background = this.name;
-            });
-
-            $("#btn-input").keyup(function (event) {
-                if (event.keyCode == 13) {
-                    $("#btn-chat").click();
-                }
-            });
 
             $scope.clear = function () {
                 $scope.ctx3.clearRect(0, 0, $scope.ctx3.canvas.width, $scope.ctx3.canvas.height);
-                var trace ={
+                var trace = {
                     tool: 'clear'
                 }
                 //$rootScope.socket.emit('trace', );
@@ -381,7 +350,7 @@
 
                     $scope.ctx2.lineTo(p1.x, p1.y);
                     $scope.ctx2.stroke();
-                    
+
                 } else if (trace.tool == 'rect') {
                     $scope.ctx2.lineWidth = trace.thickness;
                     $scope.ctx2.strokeStyle = trace.color;
@@ -439,7 +408,7 @@
                 if (chat.self) {
                     li.className += " right";
                     span.className += " pull-right";
-                    image.setAttribute("src", "http://placehold.it/50/FA6F57/fff&text=ME");
+                    image.setAttribute("src", "http://placehold.it/50/FA6F57/fff&text="+$rootScope.user.name.charAt(0));
                     strong.className += " pull-right";
                     // strong.className += " pull-right";
                     div2.appendChild(small);
@@ -448,7 +417,7 @@
                 else {
                     li.className += " left";
                     span.className += " pull-left";
-                    image.setAttribute("src", "http://placehold.it/50/55C1E7/fff&text=U");
+                    image.setAttribute("src", "http://placehold.it/50/55C1E7/fff&text="+chat.sender.charAt(0));
                     small.className += " pull-right";
                     div2.appendChild(strong);
                     div2.appendChild(small);
@@ -476,7 +445,7 @@
                     time: new Date().toLocaleTimeString(),
                     sender: $rootScope.user.name,
                     self: true,
-                    targetId : $rootScope.user.targetId
+                    targetId: $rootScope.user.targetId
                 }
                 $('#btn-input').val("");
                 $scope.chatGenerator(chat);
@@ -500,7 +469,7 @@
                         var msg = {
                             type: 'webrtc',
                             content: JSON.stringify({ "sdp": desc }),
-                            targetId : $rootScope.user.targetId
+                            targetId: $rootScope.user.targetId
                         }
                         $rootScope.socket.emit('webrtc', msg);
                     });
@@ -532,7 +501,7 @@
                         var msg = {
                             type: 'webrtc',
                             content: JSON.stringify({ "candidate": event.candidate }),
-                            targetId : $rootScope.user.targetId
+                            targetId: $rootScope.user.targetId
                         }
                         $rootScope.socket.emit('webrtc', msg);
                     }
@@ -559,7 +528,7 @@
                 if (msg == 'request') {
                     msg2 = {
                         type: 'request',
-                        targetId : $rootScope.user.targetId,
+                        targetId: $rootScope.user.targetId,
                         name: $rootScope.user.name
                     }
                     $rootScope.socket.emit('webrtc', msg2);
@@ -567,7 +536,7 @@
                 } else if (msg == 'close') {
                     msg2 = {
                         type: 'close',
-                        targetId : $rootScope.user.targetId
+                        targetId: $rootScope.user.targetId
                     }
                     $rootScope.socket.emit('webrtc', msg2);
                     _myMediaStream.stop();
@@ -585,7 +554,7 @@
                 else if (msg.type == "request") {
                     BootstrapDialog.show({
                         title: 'Video Request',
-                        message: msg.name +'is asking for video chat with you.',
+                        message: msg.name + 'is asking for video chat with you.',
                         buttons: [{
                             label: 'Accept',
                             action: function (dialog) {
@@ -609,7 +578,7 @@
                                         _myConnection.addStream(_myMediaStream);
                                         msg2 = {
                                             type: 'accept',
-                                            targetId : $rootScope.user.targetId
+                                            targetId: $rootScope.user.targetId
                                         }
                                         $rootScope.socket.emit('webrtc', msg2);
 
@@ -691,7 +660,7 @@
                                         msg2 = {
                                             type: 'webrtc',
                                             content: JSON.stringify({ 'sdp': connection.localDescription }),
-                                            targetId : $rootScope.user.targetId
+                                            targetId: $rootScope.user.targetId
                                         }
                                         $rootScope.socket.emit('webrtc', msg2);
                                     });
@@ -730,6 +699,44 @@
             }
 
 
+            $(document).on('click', '.btn-connect', function () {
+                var connId = $(this).attr('value');
+                var msg2 = {
+                    type: 'request',
+                    targetId: connId,
+                    sourceUser: $rootScope.user
+                }
+                $rootScope.socket.emit('user', msg2)
+                BootstrapDialog.alert('Connection request sent.');
+            });
+
+            $('#toolMenu li > a').click(function (e) {
+                $scope.tool = new tools[this.name]();
+                if (this.name == 'pencil') {
+                    $('#toolBtn').html("<span class='glyphicon glyphicon-pencil' aria-hidden='true'> <span class='caret'></span></span>");
+
+                } else if (this.name == 'rect') {
+                    $('#toolBtn').html("<span class='glyphicon glyphicon-unchecked' aria-hidden='true'> <span class='caret'></span></span>");
+
+                } else if (this.name == 'line') {
+                    $('#toolBtn').html("<span class='glyphicon glyphicon-minus' aria-hidden='true'> <span class='caret'></span></span>");
+
+                } else if (this.name == 'eraser') {
+                    $('#toolBtn').html("<span class='glyphicon glyphicon-erase' aria-hidden='true'> <span class='caret'></span></span>");
+
+                }
+            });
+
+            $('#colorMenu li > a').click(function (e) {
+                $scope.color = this.name;
+                document.getElementById('colorSpan').style.background = this.name;
+            });
+
+            $("#btn-input").keyup(function (event) {
+                if (event.keyCode == 13) {
+                    $("#btn-chat").click();
+                }
+            });
             _myConnection = _myConnection || _createConnection(null);
         });
     }
