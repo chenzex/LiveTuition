@@ -66,9 +66,27 @@
       </div>
     </div>
   </div>
-  <div class="col-lg-4 chat-container">
+  <div class="col-lg-4 chat-user-container">
 
-    <div class="panel panel-primary">
+    <div class="panel panel-primary" id="userContainer">
+      <div class="panel-heading">
+        <span class="glyphicon glyphicon-education"></span> Online users
+      </div>
+      <!--<div class="panel-collapse" id="collapseOne">-->
+      <div class="panel-body" id="userPanelBody" ng-controller="MainController">
+        <ul class="chat" id="chat-ul">
+          <li class="online-user-li" ng-repeat="user in onlineUsers track by $index">
+            {{user.name}}
+            <button class="btn btn-default btn-connect pull-right" value={{user.connId}}>
+              <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span>
+            </button>
+          </li>
+        </ul>
+      </div>
+      <!--</div>-->
+    </div>
+
+    <div class="panel panel-primary" id="chatContainer">
       <div class="panel-heading" id="accordion">
         <span class="glyphicon glyphicon-comment"></span> Chat
         <button ng-click="videoClick()" class="pull-right" id="videoBtn">
@@ -80,7 +98,7 @@
       <div class="panel-collapse" id="collapseOne">
         <video autoplay id="media2"></video>
         <div class="panel-body"  id="chat-main-panel">
-          <ul class="chat" id="chat-ul"></ul>
+          <ul class="chat" id="chatUl"></ul>
         </div>
         <div class="panel-footer">
           <div class="input-group">

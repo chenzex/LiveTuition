@@ -1,9 +1,12 @@
 'use strict';
-(function(){
+(function () {
     angular
-        .module("FormBuilderApp")
+        .module("LiveTuition")
         .controller("MainController", MainController);
-    function MainController($scope, $location) {
-        $scope.$location=$location;
+    function MainController($rootScope) {
+        $rootScope.AllMyData =
+        ['Jim', 'Jane', 'Heidi',
+            'Fido', 'Spot'];
+
     }
 })();

@@ -1,7 +1,7 @@
 'use strict';
 (function(){
     angular
-        .module("FormBuilderApp")
+        .module("LiveTuition")
         .controller("RegisterController", RegisterController);
         //RegisterController.$inject=['$scope','UserService'];
     function RegisterController($scope,UserService) {

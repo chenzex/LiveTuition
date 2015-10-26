@@ -1,42 +1,82 @@
 'use strict';
 (function () {
     angular
-        .module("FormBuilderApp")
+        .module("LiveTuition")
         .factory("UserService", UserService);
     function UserService() {
+
+        function guid() {
+            function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000)
+                    .toString(16)
+                    .substring(1);
+            }
+            return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                s4() + '-' + s4() + s4() + s4();
+        }
+        
         var currentUsers = [];
 
-        
-        var findUserByUsernameAndPassword = function (user) {
-            currentUsers.forEach(function(element) {
-                if(user.username==element.username && user.password==element.password1){
-                    console.log('found');
-        
+        var guestLogin = function (user, callback) {
+            user.id = guid();
+            currentUsers.push(user);
+            callback(user, currentUsers);
+        }
+
+        var findUserByUsernameAndPassword = function (username, password, callback) {
+            currentUsers.forEach(function (user) {
+                if (username == user.username && password == user.password1) {
+                    callback(user);
                 }
             }, this);
-            return null; 
+            callback(null);
         };
 
-        var createUser = function (user) {
-            currentUsers.push(user);
-            return; 
+        var findAllUsers = function (callback) {
+            callback(currentUsers);
         };
-        
-        var updateUser = function(user){
-            currentUsers.forEach(function(element) {
-                if(user.username==element.username && user.password==element.password1){
+
+        var createUser = function (user, callback) {
+
+            user.id = guid();
+            currentUsers.push(user);
+            callback(user);
+        };
+
+        var deleteUserById = function (id, callback) {
+            for (var i = currentUsers.length; i--;) {
+                if (currentUsers[i].id === id) {
+                    currentUsers.splice(i, 1);
+                    break;
+                }
+            }
+            callback(currentUsers);
+        }
+        var updateUser = function (id, user, callback) {
+            currentUsers.forEach(function (element) {
+                if (id == element.id) {
                     element.firstName = user.firstName;
                     element.lastName = user.lastName;
                     element.email = user.email;
-        
+                    callback(element);
+                    return;
                 }
             }, this);
+            callback(null);
         }
         
+        var updateOnlineUser = function(callback){
+            callback(currentUsers);
+        }
+
         return {
-            createUser : createUser,
-            findUserByUsernameAndPassword : findUserByUsernameAndPassword,
-            updateUser : updateUser
+            guestLogin: guestLogin,
+            createUser: createUser,
+            findAllUsers: findAllUsers,
+            findUserByUsernameAndPassword: findUserByUsernameAndPassword,
+            deleteUserById: deleteUserById,
+            updateUser: updateUser,
+            updateOnlineUser: updateOnlineUser
         };
     }
 })();

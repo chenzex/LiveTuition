@@ -2,7 +2,7 @@
 
 (function(){
     angular
-        .module("FormBuilderApp")
+        .module("LiveTuition")
         .config(function($routeProvider){
             $routeProvider
                 // .when("/", {
@@ -13,8 +13,8 @@
                     controller: "ChatController"
                 })
                 .otherwise({
-                    templateUrl: "chat/chat.view.html",
-                    controller: "ChatController"
+                    templateUrl: "login/login.view.html",
+                    controller: "LoginController"
                 });
         });
 })();

@@ -90,12 +90,12 @@ canvas{
 	width : 130px !important;
 }
 
-#accordion{
-	background-color: #A8D4DA;
+.panel-heading{
+	background-color: #A8D4DA !important;
 }
 
 
-.chat-container{
+.chat-user-container{
 	padding-top: 10px !important;
 }
 
@@ -142,9 +142,18 @@ canvas{
 	height: 410px;
 }
 
-.panel-primary
+#userPanelBody{
+	height:450px;
+}
+
+#chatContainer
 {
 	height: 505px;
+	display: none;
+}
+
+#userContainer{
+	/*display: none;*/
 }
 
 ::-webkit-scrollbar-track
@@ -170,4 +179,24 @@ canvas{
 	background-color: transparent;
 }
 
+#loginPanel{
+	margin-top:120px !important;
+	width:500px;
+	margin: auto;
+}
 
+#loginBtn{
+	width: 160px !important;
+	margin-top: 20px;
+	margin-left: 150px;
+}
+
+#loginLabel{
+	margin-bottom: 10px;
+	margin-left: 50px;
+}
+
+.btn-connect, .btn-connect:focus{
+	border: none !important;
+	background-color: none !important;
+}

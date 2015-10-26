@@ -26,22 +26,60 @@ server.listen(app.get('port'), app.get('ipaddr'), function () {
   console.log('Express server listening on  IP: ' + app.get('ipaddr') + ' and port ' + app.get('port'));
 });
 
+
+var onlineUsers = {};
+
 io.on('connection', function (socket) {
   console.log('a user connected');
   socket.on('disconnect', function () {
+    delete onlineUsers[socket.id];
+    var msg2 = {
+      type: 'refresh',
+      onlineUsers: onlineUsers
+    }
+    io.sockets.emit('user', msg2);
     console.log('user disconnected');
   });
+  socket.on('user', function (msg) {
+    if (msg.type == 'guestLogin') {
+      var user = msg.user;
+      user.connId = socket.id;
+      onlineUsers[socket.id] = user;
+      var msg2 = {
+        type: 'refresh',
+        onlineUsers: onlineUsers
+      }
+      socket.emit('user',{
+        type: 'login',
+        connId: socket.id,
+        onlineUsers: onlineUsers
+      });
+      socket.broadcast.emit('user', msg2);
+    }else if(msg.type == 'request'){
+      var msg2 = msg;
+      msg2.sourceId = socket.id;
+      io.sockets.connected[msg.targetId].emit("user", msg2);
+    }else if(msg.type == 'group'){
+      var msg2 = {
+        type : 'group',
+        targetId : socket.id
+      }
+      io.sockets.connected[msg.targetId].emit("user", msg2);
+      
+    }
+  });
   socket.on('chat', function (msg) {
-    socket.broadcast.emit('chat', msg);
+    io.sockets.connected[msg.targetId].emit('chat', msg);
   });
   socket.on('trace', function (trace) {
-    socket.broadcast.emit('trace', trace);
+    io.sockets.connected[trace.targetId].emit('trace', trace);
   });
   socket.on('webrtc', function (msg) {
     var msg2;
     if (msg.type == 'request') {
       msg2 = {
-        type: 'request'
+        type: 'request',
+        name: msg.name
       }
     } else if (msg.type == 'accept') {
       msg2 = {
@@ -52,7 +90,7 @@ io.on('connection', function (socket) {
     } else if (msg.type == 'webrtc') {
       msg2 = msg;
     }
-    socket.broadcast.emit('webrtc', msg2);
+    io.sockets.connected[msg.targetId].emit('webrtc', msg2);
   });
 });
 //http.listen(port, ipaddress);

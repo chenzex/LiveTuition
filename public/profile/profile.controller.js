@@ -1,7 +1,7 @@
 'use strict';
 (function(){
     angular
-        .module("FormBuilderApp")
+        .module("LiveTuition")
         .controller("ProfileController", ProfileController);
     function ProfileController($scope,UserService) {
         $scope.update = function() {

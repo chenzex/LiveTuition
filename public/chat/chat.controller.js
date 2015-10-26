@@ -1,33 +1,41 @@
 'use strict';
 (function () {
     angular
-        .module("FormBuilderApp")
+        .module("LiveTuition")
         .controller("ChatController", ChatController);
-    function ChatController($scope) {
+    function ChatController($scope, $rootScope) {
         $scope.messages = [];
-        $scope.socket = io.connect("https://live-chenze.rhcloud.com:8443");
-        // $scope.socket = io.connect("localhost:3000");
-
-        $scope.socket.on('chat', function (chat) {
+        if ($rootScope.socket == null)
+            $rootScope.socket = io.connect("https://live-chenze.rhcloud.com:8443");
+        // $rootScope.socket = io.connect("localhost:3000");
+        
+        $rootScope.socket.on('chat', function (chat) {
             chat.self = false;
             $scope.chatGenerator(chat);
         });
 
-        $scope.socket.on('trace', function (trace) {
+        $rootScope.socket.on('trace', function (trace) {
             $scope.draw(trace);
         });
 
-        $scope.socket.on('webrtc', function (msg) {
+        $rootScope.socket.on('webrtc', function (msg) {
             $scope.connect(msg);
         });
 
         $scope.sendMsg = function () {
-            $scope.socket.emit('chatMsg', $scope.chatInput);
+            $scope.chatGenerator($scope.chatInput);
+            var msg2 = {
+                targetId : $rootScope.user.targetId,
+                content : $scope.chatInput
+            }
+            $rootScope.socket.emit('chat', msg2);
             $scope.chatInput = "";
         };
 
         $scope.sendTrace = function (trace) {
-            $scope.socket.emit('trace', trace);
+            if($rootScope.user.targetId == null)return;
+            trace.targetId = $rootScope.user.targetId;
+            $rootScope.socket.emit('trace', trace);
         }
 
 
@@ -36,13 +44,16 @@
 
 
         $(function () {
-            function createColorpickers() {
-                $('.demo-auto').colorpicker({
-                    // input: $('#colorpicker')[0]
+            $(document).on('click', '.btn-connect', function () {
+                var connId = $(this).attr('value');
+                var msg2 = {
+                    type: 'request',
+                    targetId: connId,
+                    sourceUser: $rootScope.user
                 }
-                    );
-            }
-            createColorpickers();
+                $rootScope.socket.emit('user', msg2)
+                BootstrapDialog.alert('Connection request sent.');
+            });
 
 
             var canvas = $('#board');
@@ -83,10 +94,6 @@
                     }
                     Pencil.prototype.mousedown = function (e) {
                         this.points.push({ x: e.x, y: e.y });
-                        // $scope.ctx1.beginPath();
-                        // $scope.lastX = e.x;
-                        // $scope.lastY = e.y;
-                        // $scope.ctx1.moveTo($scope.lastX, $scope.lastY);
                         this.started = true;
                     };
                     Pencil.prototype.mousemove = function (e) {
@@ -106,15 +113,11 @@
                             
                             
                             for (var i = 1, len = this.points.length; i < len; i++) {
-                                // we pick the point between pi+1 & pi+2 as the
-                                // end point and p1 as our control point
                                 var midPoint = {
                                     x: p1.x + (p2.x - p1.x) / 2,
                                     y: p1.y + (p2.y - p1.y) / 2
                                 };
                                 $scope.ctx1.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y);
-                                // $scope.ctx1.lineTo(p2.x, p2.y);
-                                // console.log(p2);
                                 p1 = this.points[i];
                                 p2 = this.points[i + 1];
                             }
@@ -123,18 +126,15 @@
                             $scope.ctx1.stroke();
 
 
-                            // $scope.ctx1.lineTo(e.x, e.y);
-                            // $scope.ctx1.stroke();
-                            var trace = {
-                                points: this.points,
-                                type: e.type,
-                                tool: 'pencil',
-                                thickness: $scope.ctx1.lineWidth,
-                                color: $scope.ctx1.strokeStyle
-                            };
-                            // $scope.lastX = e.x;
-                            // $scope.lastY = e.y;
-                            $scope.sendTrace(trace);
+                                var trace = {
+                                    points: this.points,
+                                    type: e.type,
+                                    tool: 'pencil',
+                                    thickness: $scope.ctx1.lineWidth,
+                                    color: $scope.ctx1.strokeStyle,
+                                    targetId: $rootScope.user.targetId
+                                };
+                                $scope.sendTrace(trace);
                         }
                     };
                     Pencil.prototype.mouseup = function (e) {
@@ -143,8 +143,10 @@
                             this.started = false;
                             img_update();
                             var trace = {
-                                type: 'mouseup'
+                                type: 'mouseup',
+                                targetId: $rootScope.user.targetId
                             };
+                            
                             $scope.sendTrace(trace);
                         }
                     };
@@ -342,7 +344,11 @@
 
             $scope.clear = function () {
                 $scope.ctx3.clearRect(0, 0, $scope.ctx3.canvas.width, $scope.ctx3.canvas.height);
-                $scope.socket.emit('trace', { tool: 'clear' });
+                var trace ={
+                    tool: 'clear'
+                }
+                //$rootScope.socket.emit('trace', );
+                $scope.sendTrace(trace);
             }
 
             $scope.draw = function (trace) {
@@ -362,8 +368,6 @@
                             
                             
                     for (var i = 1, len = trace.points.length; i < len; i++) {
-                        // we pick the point between pi+1 & pi+2 as the
-                        // end point and p1 as our control point
                         var midPoint = {
                             x: p1.x + (p2.x - p1.x) / 2,
                             y: p1.y + (p2.y - p1.y) / 2
@@ -378,10 +382,6 @@
                     $scope.ctx2.lineTo(p1.x, p1.y);
                     $scope.ctx2.stroke();
                     
-                    // $scope.ctx1.beginPath();
-                    // $scope.ctx1.moveTo(trace.x1, trace.y1);
-                    // $scope.ctx1.lineTo(trace.x2, trace.y2);
-                    // $scope.ctx1.stroke();
                 } else if (trace.tool == 'rect') {
                     $scope.ctx2.lineWidth = trace.thickness;
                     $scope.ctx2.strokeStyle = trace.color;
@@ -462,7 +462,7 @@
 
                 li.appendChild(span);
                 li.appendChild(div1);
-                document.getElementById('chat-ul').appendChild(li);
+                document.getElementById("chatUl").appendChild(li);
 
                 var panel = document.getElementById('chat-main-panel');
                 panel.scrollTop = panel.scrollHeight;
@@ -474,12 +474,13 @@
                 chat = {
                     content: $('#btn-input').val(),
                     time: new Date().toLocaleTimeString(),
-                    sender: 'BunnyQ',
-                    self: true
+                    sender: $rootScope.user.name,
+                    self: true,
+                    targetId : $rootScope.user.targetId
                 }
                 $('#btn-input').val("");
                 $scope.chatGenerator(chat);
-                $scope.socket.emit('chat', chat);
+                $rootScope.socket.emit('chat', chat);
             }
             $('#btn-chat').click(function () {
                 sendChat();
@@ -498,9 +499,10 @@
                         //hub.server.webRtcSignal(JSON.stringify({ "sdp": desc }), GroupId);
                         var msg = {
                             type: 'webrtc',
-                            content: JSON.stringify({ "sdp": desc })
+                            content: JSON.stringify({ "sdp": desc }),
+                            targetId : $rootScope.user.targetId
                         }
-                        $scope.socket.emit('webrtc', msg);
+                        $rootScope.socket.emit('webrtc', msg);
                     });
                     console.log('sending offer');
                 });
@@ -529,25 +531,16 @@
                             
                         var msg = {
                             type: 'webrtc',
-                            content: JSON.stringify({ "candidate": event.candidate })
+                            content: JSON.stringify({ "candidate": event.candidate }),
+                            targetId : $rootScope.user.targetId
                         }
-                        $scope.socket.emit('webrtc', msg);
+                        $rootScope.socket.emit('webrtc', msg);
                     }
                 };
 
                 // New remote media stream was added
                 connection.onaddstream = function (event) {
 
-                    // var newVideoElement = document.createElement('video');
-                    // newVideoElement.className = 'video';
-                    // newVideoElement.autoplay = 'autoplay';
-
-                    
-                    // attachMediaStream(newVideoElement, event.stream);
-
-                    
-                    // var parent = document.querySelector('#collapseOne');
-                    // parent.insertBefore(newVideoElement, parent.childNodes[0]);
                     document.getElementById('chat-main-panel').style.height = "170px";
                     document.getElementById('media2').style.display = "block";
                     var videoElement = document.querySelector('#media2');
@@ -565,15 +558,18 @@
                 var msg2;
                 if (msg == 'request') {
                     msg2 = {
-                        type: 'request'
+                        type: 'request',
+                        targetId : $rootScope.user.targetId,
+                        name: $rootScope.user.name
                     }
-                    $scope.socket.emit('webrtc', msg2);
+                    $rootScope.socket.emit('webrtc', msg2);
                     console.log("send request");
                 } else if (msg == 'close') {
                     msg2 = {
-                        type: 'close'
+                        type: 'close',
+                        targetId : $rootScope.user.targetId
                     }
-                    $scope.socket.emit('webrtc', msg2);
+                    $rootScope.socket.emit('webrtc', msg2);
                     _myMediaStream.stop();
                     var videos = document.getElementsByTagName("video");
                     for (var i = 0; i < videos.length; i++) {
@@ -589,7 +585,7 @@
                 else if (msg.type == "request") {
                     BootstrapDialog.show({
                         title: 'Video Request',
-                        message: 'XX is asking for video with you.',
+                        message: msg.name +'is asking for video chat with you.',
                         buttons: [{
                             label: 'Accept',
                             action: function (dialog) {
@@ -612,9 +608,10 @@
                                         // Add our stream to the peer connection
                                         _myConnection.addStream(_myMediaStream);
                                         msg2 = {
-                                            type: 'accept'
+                                            type: 'accept',
+                                            targetId : $rootScope.user.targetId
                                         }
-                                        $scope.socket.emit('webrtc', msg2);
+                                        $rootScope.socket.emit('webrtc', msg2);
 
                                         sendOffer();
                                     },
@@ -628,7 +625,7 @@
                         }, {
                                 label: 'Cancel',
                                 action: function (dialog) {
-                                    dialog.setMessage('Message 2');
+                                    dialog.close();
                                 }
                             }]
                     });
@@ -693,9 +690,10 @@
                                         //hub.server.webRtcSignal(JSON.stringify({ 'sdp': connection.localDescription }), GroupId);
                                         msg2 = {
                                             type: 'webrtc',
-                                            content: JSON.stringify({ 'sdp': connection.localDescription })
+                                            content: JSON.stringify({ 'sdp': connection.localDescription }),
+                                            targetId : $rootScope.user.targetId
                                         }
-                                        $scope.socket.emit('webrtc', msg2);
+                                        $rootScope.socket.emit('webrtc', msg2);
                                     });
                                 }, function (error) { console.log('Error creating session description: ' + error); });
                             } else if (connection.remoteDescription.type == 'answer') {
